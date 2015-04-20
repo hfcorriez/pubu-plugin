@@ -38,9 +38,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:ssh://git@github.com:trigged/slack-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com:trigged/slack-plugin.git</developerConnection>
-        <url>https://github.com/trigged/slack-plugin</url>
+        <connection>scm:git:ssh://git@github.com:hfcorriez/pubu-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:hfcorriez/pubu-plugin.git</developerConnection>
+        <url>https://github.com/hfcorriez/pubu-plugin</url>
         <tag>HEAD</tag>
     </scm>
 

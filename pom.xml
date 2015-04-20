@@ -119,29 +119,11 @@
 
     <developers>
         <developer>
-            <id>grantmd</id>
-            <name>Myles Grant</name>
-            <email>myles@tinyspeck.com</email>
+            <id>trigged</id>
+            <name>trigged tang</name>
+            <email>trigged@pubucloud.com</email>
             <roles>
                 <role>author</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>sag47</id>
-            <name>Sam Gleske</name>
-            <email>sam.mxracer@gmail.com</email>
-            <url>https://github.com/samrocketman</url>
-            <roles>
-                <role>maintainer</role>
-            </roles>
-            <timezone>America/New_York</timezone>
-        </developer>
-        <developer>
-            <id>peergum</id>
-            <name>Phil Hilger</name>
-            <email>phil@peergum.com</email>
-            <roles>
-                <role>collaborator</role>
             </roles>
         </developer>
     </developers>

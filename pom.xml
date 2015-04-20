@@ -18,12 +18,12 @@
         <version>1.567</version>
     </parent>
 
-    <artifactId>slack</artifactId>
+    <artifactId>pubu</artifactId>
     <packaging>hpi</packaging>
     <version>1.8-SNAPSHOT</version>
-    <name>Slack Notification Plugin</name>
-    <description>A Build status publisher that notifies channels on a Slack team</description>
-    <url>http://wiki.jenkins-ci.org/display/JENKINS/Slack+Plugin</url>
+    <name>pubu Notification Plugin</name>
+    <description>A Build status publisher that notifies channels on a Pubu team</description>
+    <url>http://wiki.jenkins-ci.org/display/JENKINS/Pubu+Plugin</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -38,9 +38,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:ssh://git@github.com/jenkinsci/slack-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/slack-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/slack-plugin</url>
+        <connection>scm:git:ssh://git@github.com:trigged/slack-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:trigged/slack-plugin.git</developerConnection>
+        <url>https://github.com/trigged/slack-plugin</url>
         <tag>HEAD</tag>
     </scm>
 

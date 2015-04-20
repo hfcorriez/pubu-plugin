@@ -3,9 +3,10 @@ package jenkins.plugins.slack;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.PostMethod;
-
+import org.apache.commons.httpclient.Cookie;
 import org.json.JSONObject;
 import org.json.JSONArray;
+
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,11 +16,14 @@ import hudson.ProxyConfiguration;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 public class StandardSlackService implements SlackService {
 
     private static final Logger logger = Logger.getLogger(StandardSlackService.class.getName());
 
-    private String host = "slack.com";
+    private String host = "app.com.t.proxylocal.com";
     private String teamDomain;
     private String token;
     private String[] roomIds;
@@ -37,8 +41,9 @@ public class StandardSlackService implements SlackService {
 
     public boolean publish(String message, String color) {
         for (String roomId : roomIds) {
-            String url = "https://" + teamDomain + "." + host + "/services/hooks/jenkins-ci?token=" + token;
-            logger.info("Posting: to " + roomId + " on " + teamDomain + " using " + url +": " + message + " " + color);
+            //http://app.com.t.proxylocal.com/services/7yr6rv4zde2dt2llg9n8v3pbcz1
+            String url = "http://" + host + "/services/" + token;
+            logger.info("Posting: to " + roomId + " on " + teamDomain + " using " + url + ": " + message + " " + color);
             HttpClient client = getHttpClient();
             PostMethod post = new PostMethod(url);
             JSONObject json = new JSONObject();
@@ -47,6 +52,7 @@ public class StandardSlackService implements SlackService {
                 JSONObject field = new JSONObject();
                 field.put("short", false);
                 field.put("value", message);
+
 
                 JSONArray fields = new JSONArray();
                 fields.put(field);
@@ -61,11 +67,26 @@ public class StandardSlackService implements SlackService {
                 json.put("channel", roomId);
                 json.put("attachments", attachments);
 
+//                InetAddress ip = InetAddress.getLocalHost();
+//                String hostname = ip.getHostName();
+////                InetAddress addr = InetAddress.getByName(InetAddress.getLocalHost().getHostName());
+//                String hostnameCanonical = ip.getCanonicalHostName();
+//                String strDomainName = hostnameCanonical.substring(hostnameCanonical.indexOf(".") + 1);
+//                json.put("host", strDomainName);
+//                json.put("hostname", hostname);
+//                json.put("hostnameCanonical", hostnameCanonical);
+
+
+                json.put("host1", client.getHost());
+                json.put("port", client.getPort());
+                json.put("getHostConfiguration", client.getHostConfiguration());
+
+
                 post.addParameter("payload", json.toString());
                 post.getParams().setContentCharset("UTF-8");
                 int responseCode = client.executeMethod(post);
                 String response = post.getResponseBodyAsString();
-                if(responseCode != HttpStatus.SC_OK) {
+                if (responseCode != HttpStatus.SC_OK) {
                     logger.log(Level.WARNING, "Slack post may have failed. Response: " + response);
                     return false;
                 }
@@ -96,7 +117,7 @@ public class StandardSlackService implements SlackService {
                     // and
                     // http://svn.apache.org/viewvc/httpcomponents/oac.hc3x/trunk/src/examples/BasicAuthenticationExample.java?view=markup
                     client.getState().setProxyCredentials(AuthScope.ANY,
-                        new UsernamePasswordCredentials(username, password));
+                            new UsernamePasswordCredentials(username, password));
                 }
             }
         }

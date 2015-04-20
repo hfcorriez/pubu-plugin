@@ -1,4 +1,4 @@
-# Slack plugin for Jenkins - [![Build Status][jenkins-status]][jenkins-builds]
+# Pubu plugin for Jenkins - [![Build Status][jenkins-status]][jenkins-builds]
 
 Started with a fork of the HipChat plugin:
 
@@ -8,8 +8,8 @@ Which was, in turn, a fork of the Campfire plugin.
 
 # Jenkins Instructions
 
-1. Get a Slack account: https://slack.com/
-2. Configure the Jenkins integration: https://my.slack.com/services/new/jenkins-ci
+1. Get a Pubu account: https://pubu.im/
+2. Configure the Jenkins integration:
 3. Install this plugin on your Jenkins server
 4. Configure it in your Jenkins job and **add it as a Post-build action**.
 
@@ -22,9 +22,9 @@ Run unit tests
 
     mvn test
 
-Create an HPI file to install in Jenkins (HPI file will be in `target/slack.hpi`).
+Create an HPI file to install in Jenkins (HPI file will be in `target/pubu.hpi`).
 
     mvn package
 
-[jenkins-builds]: https://jenkins.ci.cloudbees.com/job/plugins/job/slack-plugin/
-[jenkins-status]: https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/slack-plugin
+[jenkins-builds]: https://jenkins.ci.cloudbees.com/job/plugins/job/pubu-plugin/
+[jenkins-status]: https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/pubu-plugin

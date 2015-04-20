@@ -1,6 +1,5 @@
-package jenkins.plugins.slack;
+package jenkins.plugins.pubu;
 
-import jenkins.plugins.slack.StandardSlackService;
 import org.junit.Before;
 import org.junit.Test;
 

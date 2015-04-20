@@ -1,4 +1,4 @@
-package jenkins.plugins.slack;
+package jenkins.plugins.pubu;
 
 import hudson.Util;
 import hudson.model.Result;
@@ -81,7 +81,7 @@ public class ActiveNotifier implements FineGrainedNotifier {
         AbstractProject<?, ?> project = r.getProject();
         SlackNotifier.SlackJobProperty jobProperty = project.getProperty(SlackNotifier.SlackJobProperty.class);
         if (jobProperty == null) {
-            logger.warning("Project " + project.getName() + " has no Slack configuration.");
+            logger.warning("Project " + project.getName() + " has no Pubu configuration.");
             return;
         }
         Result result = r.getResult();

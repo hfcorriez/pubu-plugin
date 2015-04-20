@@ -1,0 +1,59 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:section title="Pubu Notifications">
+        <f:entry title="Notify Build Start">
+            <f:checkbox name="pubuStartNotification" value="true" checked="${instance.getStartNotification()}"/>
+        </f:entry>
+
+        <f:entry title="Notify Aborted">
+            <f:checkbox name="pubuNotifyAborted" value="true" checked="${instance.getNotifyAborted()}"/>
+        </f:entry>
+
+        <f:entry title="Notify Failure">
+            <f:checkbox name="pubuNotifyFailure" value="true" checked="${instance.getNotifyFailure()}"/>
+        </f:entry>
+
+        <f:entry title="Notify Not Built">
+            <f:checkbox name="pubuNotifyNotBuilt" value="true" checked="${instance.getNotifyNotBuilt()}"/>
+        </f:entry>
+
+        <f:entry title="Notify Success">
+            <f:checkbox name="pubuNotifySuccess" value="true" checked="${instance.getNotifySuccess()}"/>
+        </f:entry>
+
+        <f:entry title="Notify Unstable">
+            <f:checkbox name="pubuNotifyUnstable" value="true" checked="${instance.getNotifyUnstable()}"/>
+        </f:entry>
+
+        <f:entry title="Notify Back To Normal">
+            <f:checkbox name="pubuNotifyBackToNormal" value="true" checked="${instance.getNotifyBackToNormal()}"/>
+        </f:entry>
+
+        <f:advanced>
+            <f:entry title="Notify Repeated Failure">
+                <f:checkbox name="pubuNotifyRepeatedFailure" value="true" checked="${instance.getNotifyRepeatedFailure()}"/>
+            </f:entry>
+            <f:entry title="Include Test Summary">
+                <f:checkbox name="includeTestSummary" value="true" checked="${instance.includeTestSummary()}"/>
+            </f:entry>
+
+            <f:entry title="Show Commit List with Titles and Authors">
+                <f:checkbox name="pubuShowCommitList" value="true" checked="${instance.getShowCommitList()}"/>
+            </f:entry>
+
+            <f:entry title="Team Domain" help="${rootURL}/plugin/pubu/help-projectConfig-pubuTeamDomain.html">
+                <f:textbox name="pubuTeamDomain" value="${instance.getTeamDomain()}" />
+            </f:entry>
+
+            <f:entry title="Integration Token" help="${rootURL}/plugin/pubu/help-projectConfig-pubuToken.html">
+                <f:textbox name="pubuToken" value="${instance.getToken()}" />
+            </f:entry>
+
+            <f:entry title="Project Channel" help="${rootURL}/plugin/pubu/help-projectConfig-pubuRoom.html">
+                <f:textbox name="pubuProjectRoom" value="${instance.getRoom()}"/>
+            </f:entry>
+            <f:validateButton
+                title="${%Test Connection}" progress="${%Testing...}"
+                method="testConnection" with="pubuTeamDomain,pubuToken,pubuProjectRoom" />
+        </f:advanced>
+    </f:section>
+</j:jelly>

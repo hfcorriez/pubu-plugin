@@ -1,4 +1,4 @@
-package jenkins.plugins.slack;
+package jenkins.plugins.pubu;
 
 import hudson.Extension;
 import hudson.Launcher;
@@ -143,30 +143,30 @@ public class SlackNotifier extends Notifier {
         @Override
         public SlackNotifier newInstance(StaplerRequest sr) {
             if (teamDomain == null) {
-                teamDomain = sr.getParameter("slackTeamDomain");
+                teamDomain = sr.getParameter("pubuTeamDomain");
             }
             if (token == null) {
-                token = sr.getParameter("slackToken");
+                token = sr.getParameter("pubuToken");
             }
             if (buildServerUrl == null) {
-                buildServerUrl = sr.getParameter("slackBuildServerUrl");
+                buildServerUrl = sr.getParameter("pubuBuildServerUrl");
             }
             if (room == null) {
-                room = sr.getParameter("slackRoom");
+                room = sr.getParameter("pubuRoom");
             }
             if (sendAs == null) {
-                sendAs = sr.getParameter("slackSendAs");
+                sendAs = sr.getParameter("pubuSendAs");
             }
             return new SlackNotifier(teamDomain, token, room, buildServerUrl, sendAs);
         }
 
         @Override
         public boolean configure(StaplerRequest sr, JSONObject formData) throws FormException {
-            teamDomain = sr.getParameter("slackTeamDomain");
-            token = sr.getParameter("slackToken");
-            room = sr.getParameter("slackRoom");
-            buildServerUrl = sr.getParameter("slackBuildServerUrl");
-            sendAs = sr.getParameter("slackSendAs");
+            teamDomain = sr.getParameter("pubuTeamDomain");
+            token = sr.getParameter("pubuToken");
+            room = sr.getParameter("pubuRoom");
+            buildServerUrl = sr.getParameter("pubuBuildServerUrl");
+            sendAs = sr.getParameter("pubuSendAs");
             if (buildServerUrl != null && !buildServerUrl.endsWith("/")) {
                 buildServerUrl = buildServerUrl + "/";
             }
@@ -176,16 +176,16 @@ public class SlackNotifier extends Notifier {
 
         @Override
         public String getDisplayName() {
-            return "Slack Notifications";
+            return "Pubu Notifications";
         }
 
-        public FormValidation doTestConnection(@QueryParameter("slackTeamDomain") final String teamDomain,
-                @QueryParameter("slackToken") final String authToken,
-                @QueryParameter("slackRoom") final String room,
-                @QueryParameter("slackBuildServerUrl") final String buildServerUrl) throws FormException {
+        public FormValidation doTestConnection(@QueryParameter("pubuTeamDomain") final String teamDomain,
+                @QueryParameter("pubuToken") final String authToken,
+                @QueryParameter("pubuRoom") final String room,
+                @QueryParameter("pubuBuildServerUrl") final String buildServerUrl) throws FormException {
             try {
                 SlackService testSlackService = new StandardSlackService(teamDomain, authToken, room);
-                String message = "Slack/Jenkins plugin: you're all set on " + buildServerUrl;
+                String message = "Pubu/Jenkins plugin: you're all set on " + buildServerUrl;
                 boolean success = testSlackService.publish(message, "green");
                 return success ? FormValidation.ok("Success") : FormValidation.error("Failure");
             } catch (Exception e) {
@@ -323,7 +323,7 @@ public class SlackNotifier extends Notifier {
         public static final class DescriptorImpl extends JobPropertyDescriptor {
 
             public String getDisplayName() {
-                return "Slack Notifications";
+                return "Pubu Notifications";
             }
 
             @Override
@@ -334,27 +334,27 @@ public class SlackNotifier extends Notifier {
             @Override
             public SlackJobProperty newInstance(StaplerRequest sr, JSONObject formData) throws hudson.model.Descriptor.FormException {
                 return new SlackJobProperty(
-                        sr.getParameter("slackTeamDomain"),
-                        sr.getParameter("slackToken"),
-                        sr.getParameter("slackProjectRoom"),
-                        sr.getParameter("slackStartNotification") != null,
-                        sr.getParameter("slackNotifyAborted") != null,
-                        sr.getParameter("slackNotifyFailure") != null,
-                        sr.getParameter("slackNotifyNotBuilt") != null,
-                        sr.getParameter("slackNotifySuccess") != null,
-                        sr.getParameter("slackNotifyUnstable") != null,
-                        sr.getParameter("slackNotifyBackToNormal") != null,
-                        sr.getParameter("slackNotifyRepeatedFailure") != null,
+                        sr.getParameter("pubuTeamDomain"),
+                        sr.getParameter("pubuToken"),
+                        sr.getParameter("pubuProjectRoom"),
+                        sr.getParameter("pubuStartNotification") != null,
+                        sr.getParameter("pubuNotifyAborted") != null,
+                        sr.getParameter("pubuNotifyFailure") != null,
+                        sr.getParameter("pubuNotifyNotBuilt") != null,
+                        sr.getParameter("pubuNotifySuccess") != null,
+                        sr.getParameter("pubuNotifyUnstable") != null,
+                        sr.getParameter("pubuNotifyBackToNormal") != null,
+                        sr.getParameter("pubuNotifyRepeatedFailure") != null,
                         sr.getParameter("includeTestSummary") != null,
-                        sr.getParameter("slackShowCommitList") != null);
+                        sr.getParameter("pubuShowCommitList") != null);
             }
 
-            public FormValidation doTestConnection(@QueryParameter("slackTeamDomain") final String teamDomain,
-                    @QueryParameter("slackToken") final String authToken,
-                    @QueryParameter("slackProjectRoom") final String room) throws FormException {
+            public FormValidation doTestConnection(@QueryParameter("pubuTeamDomain") final String teamDomain,
+                    @QueryParameter("pubuToken") final String authToken,
+                    @QueryParameter("pubuProjectRoom") final String room) throws FormException {
                 try {
                     SlackService testSlackService = new StandardSlackService(teamDomain, authToken, room);
-                    String message = "Slack/Jenkins plugin: you're all set.";
+                    String message = "Pubu/Jenkins plugin: you're all set.";
                     boolean success = testSlackService.publish(message, "green");
                     return success ? FormValidation.ok("Success") : FormValidation.error("Failure");
                 } catch (Exception e) {

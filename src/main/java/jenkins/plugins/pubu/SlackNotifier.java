@@ -75,19 +75,13 @@ public class SlackNotifier extends Notifier {
         return BuildStepMonitor.BUILD;
     }
 
-    public SlackService newSlackService(String teamDomain, String token, String projectRoom) {
+    public SlackService newSlackService(String teamDomain) {
         // Settings are passed here from the job, if they are null, use global settings
         if (teamDomain == null) {
             teamDomain = getTeamDomain();
         }
-        if (token == null) {
-            token = getAuthToken();
-        }
-        if (projectRoom == null) {
-            projectRoom = getRoom();
-        }
 
-        return new StandardSlackService(teamDomain, token, projectRoom);
+        return new StandardSlackService(teamDomain);
     }
 
     @Override
@@ -179,13 +173,10 @@ public class SlackNotifier extends Notifier {
             return "Pubu Notifications";
         }
 
-        public FormValidation doTestConnection(@QueryParameter("pubuTeamDomain") final String teamDomain,
-                @QueryParameter("pubuToken") final String authToken,
-                @QueryParameter("pubuRoom") final String room,
-                @QueryParameter("pubuBuildServerUrl") final String buildServerUrl) throws FormException {
+        public FormValidation doTestConnection(@QueryParameter("pubuTeamDomain") final String teamDomain) throws FormException {
             try {
-                SlackService testSlackService = new StandardSlackService(teamDomain, authToken, room);
-                String message = "Pubu/Jenkins plugin: you're all set on " + buildServerUrl;
+                SlackService testSlackService = new StandardSlackService(teamDomain);
+                String message = "Hello Jenkins";
                 boolean success = testSlackService.publish(message, "green");
                 return success ? FormValidation.ok("Success") : FormValidation.error("Failure");
             } catch (Exception e) {
@@ -349,12 +340,10 @@ public class SlackNotifier extends Notifier {
                         sr.getParameter("pubuShowCommitList") != null);
             }
 
-            public FormValidation doTestConnection(@QueryParameter("pubuTeamDomain") final String teamDomain,
-                    @QueryParameter("pubuToken") final String authToken,
-                    @QueryParameter("pubuProjectRoom") final String room) throws FormException {
+            public FormValidation doTestConnection(@QueryParameter("pubuTeamDomain") final String teamDomain) throws FormException {
                 try {
-                    SlackService testSlackService = new StandardSlackService(teamDomain, authToken, room);
-                    String message = "Pubu/Jenkins plugin: you're all set.";
+                    SlackService testSlackService = new StandardSlackService(teamDomain);
+                    String message = "Pong";
                     boolean success = testSlackService.publish(message, "green");
                     return success ? FormValidation.ok("Success") : FormValidation.error("Failure");
                 } catch (Exception e) {

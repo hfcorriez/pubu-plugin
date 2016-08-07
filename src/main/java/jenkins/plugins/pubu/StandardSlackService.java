@@ -20,83 +20,95 @@ public class StandardSlackService implements SlackService {
 
     private static final Logger logger = Logger.getLogger(StandardSlackService.class.getName());
 
-    private String host = "app.com.t.proxylocal.com";
+    private String host = "";
     private String teamDomain;
     private String token;
     private String[] roomIds;
 
-    public StandardSlackService(String teamDomain, String token, String roomId) {
+    public StandardSlackService(String url) {
         super();
-        this.teamDomain = teamDomain;
-        this.token = token;
-        this.roomIds = roomId.split("[,; ]+");
+        this.host = url;
+        this.teamDomain = url;
+        this.token = url;
+        this.roomIds = url.split("[,; ]+");
     }
 
     public boolean publish(String message) {
         return publish(message, "warning");
     }
 
-    public boolean publish(String message, String color) {
-        for (String roomId : roomIds) {
-            //http://app.com.t.proxylocal.com/services/7yr6rv4zde2dt2llg9n8v3pbcz1
-            String url = "http://" + host + "/services/" + token;
-            logger.info("Posting: to " + roomId + " on " + teamDomain + " using " + url + ": " + message + " " + color);
-            HttpClient client = getHttpClient();
-            PostMethod post = new PostMethod(url);
-            JSONObject json = new JSONObject();
+    public boolean publish(JSONObject payload) {
+        logger.info("Posting: to " + host + " using " + host);
+        HttpClient client = getHttpClient();
+        PostMethod post = new PostMethod(host);
 
-            try {
-                JSONObject field = new JSONObject();
-                field.put("short", false);
-                field.put("value", message);
+        try {
+            payload.put("_version", 2);
 
-
-                JSONArray fields = new JSONArray();
-                fields.put(field);
-
-                JSONObject attachment = new JSONObject();
-                attachment.put("fallback", message);
-                attachment.put("color", color);
-                attachment.put("fields", fields);
-                JSONArray attachments = new JSONArray();
-                attachments.put(attachment);
-
-                json.put("channel", roomId);
-                json.put("attachments", attachments);
-
-//                InetAddress ip = InetAddress.getLocalHost();
-//                String hostname = ip.getHostName();
-////                InetAddress addr = InetAddress.getByName(InetAddress.getLocalHost().getHostName());
-//                String hostnameCanonical = ip.getCanonicalHostName();
-//                String strDomainName = hostnameCanonical.substring(hostnameCanonical.indexOf(".") + 1);
-//                json.put("host", strDomainName);
-//                json.put("hostname", hostname);
-//                json.put("hostnameCanonical", hostnameCanonical);
-
-
-                json.put("host1", client.getHost());
-                json.put("port", client.getPort());
-                json.put("getHostConfiguration", client.getHostConfiguration());
-
-
-                post.addParameter("payload", json.toString());
-                post.getParams().setContentCharset("UTF-8");
-                int responseCode = client.executeMethod(post);
-                String response = post.getResponseBodyAsString();
-                if (responseCode != HttpStatus.SC_OK) {
-                    logger.log(Level.WARNING, "Pubu post may have failed. Response: " + response);
-                    return false;
-                }
-                return true;
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "Error posting to Pubu", e);
+            post.addParameter("payload", payload.toString());
+            post.getParams().setContentCharset("UTF-8");
+            int responseCode = client.executeMethod(post);
+            String response = post.getResponseBodyAsString();
+            if (responseCode != HttpStatus.SC_OK) {
+                logger.log(Level.WARNING, "Pubu post may have failed. Response: " + response);
                 return false;
-            } finally {
-                logger.info("Posting succeeded");
-                post.releaseConnection();
             }
+            return true;
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Error posting to Pubu", e);
+            return false;
+        } finally {
+            logger.info("Posting succeeded");
+            post.releaseConnection();
+            return true;
         }
-        return false;
+
+    }
+
+    public boolean publish(String message, String color) {
+        String url = host;
+        logger.info("Posting: to " + host + " using " + url + ": " + message + " " + color);
+        HttpClient client = getHttpClient();
+        PostMethod post = new PostMethod(url);
+        JSONObject json = new JSONObject();
+
+        try {
+            JSONObject field = new JSONObject();
+            field.put("short", false);
+            field.put("value", message);
+
+
+            JSONArray fields = new JSONArray();
+            fields.put(field);
+
+            JSONObject attachment = new JSONObject();
+            attachment.put("fallback", message);
+            attachment.put("color", color);
+            attachment.put("fields", fields);
+            JSONArray attachments = new JSONArray();
+            attachments.put(attachment);
+
+            json.put("attachments", attachments);
+
+
+            post.addParameter("payload", json.toString());
+            post.getParams().setContentCharset("UTF-8");
+            int responseCode = client.executeMethod(post);
+            String response = post.getResponseBodyAsString();
+            if (responseCode != HttpStatus.SC_OK) {
+                logger.log(Level.WARNING, "Pubu post may have failed. Response: " + response);
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Error posting to Pubu", e);
+            return false;
+        } finally {
+            logger.info("Posting succeeded");
+            post.releaseConnection();
+            return true;
+        }
+
     }
 
     private HttpClient getHttpClient() {

@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.json.JSONObject;
+import org.json.JSONArray;
+
 @SuppressWarnings("rawtypes")
 public class ActiveNotifier implements FineGrainedNotifier {
 
@@ -33,12 +36,10 @@ public class ActiveNotifier implements FineGrainedNotifier {
         this.notifier = notifier;
     }
 
-    private SlackService getSlack(AbstractBuild r) {
+    private SlackService getLeanChat(AbstractBuild r) {
         AbstractProject<?, ?> project = r.getProject();
-        String projectRoom = Util.fixEmpty(project.getProperty(SlackNotifier.SlackJobProperty.class).getRoom());
         String teamDomain = Util.fixEmpty(project.getProperty(SlackNotifier.SlackJobProperty.class).getTeamDomain());
-        String token = Util.fixEmpty(project.getProperty(SlackNotifier.SlackJobProperty.class).getToken());
-        return notifier.newSlackService(teamDomain, token, projectRoom);
+        return notifier.newSlackService(teamDomain);
     }
 
     public void deleted(AbstractBuild r) {
@@ -50,41 +51,46 @@ public class ActiveNotifier implements FineGrainedNotifier {
         if (causeAction != null) {
             Cause scmCause = causeAction.findCause(SCMTrigger.SCMTriggerCause.class);
             if (scmCause == null) {
-                MessageBuilder message = new MessageBuilder(notifier, build);
-                message.append(causeAction.getShortDescription());
-                notifyStart(build, message.appendOpenLink().toString());
+                JSONObject payload = new JSONObject();
+                payload.put("project", build.getProject().getFullDisplayName());
+                payload.put("display", build.getDisplayName());
+                payload.put("link", build.getUrl());
+                payload.put("event", "Cause");
+                payload.put("reason", causeAction.getShortDescription());
+                notifyStart(build, payload);
             }
         }
 
-        String changes = getChanges(build);
+        JSONObject changes = getChanges(build);
         if (changes != null) {
             notifyStart(build, changes);
         } else {
-            notifyStart(build, getBuildStatusMessage(build, false));
+            notifyStart(build, getBuildStatusPayload(build, false, "start"));
         }
     }
 
-    private void notifyStart(AbstractBuild build, String message) {
+    private void notifyStart(AbstractBuild build, JSONObject payload) {
         AbstractProject<?, ?> project = build.getProject();
         AbstractBuild<?, ?> previousBuild = project.getLastBuild().getPreviousCompletedBuild();
         if (previousBuild == null) {
-            getSlack(build).publish(message, "good");
+            getLeanChat(build).publish(payload);
         } else {
-            getSlack(build).publish(message, getBuildColor(previousBuild));
+            payload.put("status", getBuildStatus(previousBuild));
+            getLeanChat(build).publish(payload);
         }
     }
 
     public void finalized(AbstractBuild r) {
     }
 
-    public void completed(AbstractBuild r) {
-        AbstractProject<?, ?> project = r.getProject();
+    public void completed(AbstractBuild build) {
+        AbstractProject<?, ?> project = build.getProject();
         SlackNotifier.SlackJobProperty jobProperty = project.getProperty(SlackNotifier.SlackJobProperty.class);
         if (jobProperty == null) {
             logger.warning("Project " + project.getName() + " has no Pubu configuration.");
             return;
         }
-        Result result = r.getResult();
+        Result result = build.getResult();
         AbstractBuild<?, ?> previousBuild = project.getLastBuild();
         do {
             previousBuild = previousBuild.getPreviousCompletedBuild();
@@ -100,20 +106,19 @@ public class ActiveNotifier implements FineGrainedNotifier {
                 && jobProperty.getNotifyBackToNormal())
                 || (result == Result.SUCCESS && jobProperty.getNotifySuccess())
                 || (result == Result.UNSTABLE && jobProperty.getNotifyUnstable())) {
-            getSlack(r).publish(getBuildStatusMessage(r, jobProperty.includeTestSummary()),
-                    getBuildColor(r));
+            getLeanChat(build).publish(getBuildStatusPayload(build, jobProperty.includeTestSummary(), "completed"));
             if (jobProperty.getShowCommitList()) {
-                getSlack(r).publish(getCommitList(r), getBuildColor(r));
+                getLeanChat(build).publish(getCommitList(build));
             }
         }
     }
 
-    String getChanges(AbstractBuild r) {
-        if (!r.hasChangeSetComputed()) {
+    JSONObject getChanges(AbstractBuild build) {
+        if (!build.hasChangeSetComputed()) {
             logger.info("No change set computed...");
             return null;
         }
-        ChangeLogSet changeSet = r.getChangeSet();
+        ChangeLogSet changeSet = build.getChangeSet();
         List<Entry> entries = new LinkedList<Entry>();
         Set<AffectedFile> files = new HashSet<AffectedFile>();
         for (Object o : changeSet.getItems()) {
@@ -126,21 +131,25 @@ public class ActiveNotifier implements FineGrainedNotifier {
             logger.info("Empty change...");
             return null;
         }
+        JSONObject payload = new JSONObject();
         Set<String> authors = new HashSet<String>();
         for (Entry entry : entries) {
             authors.add(entry.getAuthor().getDisplayName());
         }
-        MessageBuilder message = new MessageBuilder(notifier, r);
-        message.append("Started by changes from ");
-        message.append(StringUtils.join(authors, ", "));
-        message.append(" (");
-        message.append(files.size());
-        message.append(" file(s) changed)");
-        return message.appendOpenLink().toString();
+
+        payload.put("authors", StringUtils.join(authors, ", "));
+        payload.put("changes", files.size());
+        payload.put("project", build.getProject().getFullDisplayName());
+        payload.put("display", build.getDisplayName());
+        payload.put("link", build.getUrl());
+        payload.put("event", "start");
+        return payload;
     }
 
-    String getCommitList(AbstractBuild r) {
-        ChangeLogSet changeSet = r.getChangeSet();
+    JSONObject getCommitList(AbstractBuild build) {
+        ChangeLogSet changeSet = build.getChangeSet();
+        JSONObject payload = getChanges(build);
+
         List<Entry> entries = new LinkedList<Entry>();
         for (Object o : changeSet.getItems()) {
             Entry entry = (Entry) o;
@@ -149,157 +158,69 @@ public class ActiveNotifier implements FineGrainedNotifier {
         }
         if (entries.isEmpty()) {
             logger.info("Empty change...");
-            Cause.UpstreamCause c = (Cause.UpstreamCause)r.getCause(Cause.UpstreamCause.class);
+            Cause.UpstreamCause c = (Cause.UpstreamCause) build.getCause(Cause.UpstreamCause.class);
             if (c == null) {
-                return "No Changes.";
+                return payload;
             }
             String upProjectName = c.getUpstreamProject();
             int buildNumber = c.getUpstreamBuild();
             AbstractProject project = Hudson.getInstance().getItemByFullName(upProjectName, AbstractProject.class);
-            AbstractBuild upBuild = (AbstractBuild)project.getBuildByNumber(buildNumber);
+            AbstractBuild upBuild = (AbstractBuild) project.getBuildByNumber(buildNumber);
             return getCommitList(upBuild);
         }
-        Set<String> commits = new HashSet<String>();
+
+        JSONArray commits = new JSONArray();
+
         for (Entry entry : entries) {
-            StringBuffer commit = new StringBuffer();
-            commit.append(entry.getMsg());
-            commit.append(" [").append(entry.getAuthor().getDisplayName()).append("]");
-            commits.add(commit.toString());
+            JSONObject commit = new JSONObject();
+            commit.put("entry", entry.getMsg());
+            commit.put("commit", commit.toString());
+            commit.put("author", entry.getAuthor().getDisplayName());
+            commits.put(commit);
         }
-        MessageBuilder message = new MessageBuilder(notifier, r);
-        message.append("Changes:\n- ");
-        message.append(StringUtils.join(commits, "\n- "));
-        return message.toString();
+        payload.put("commits", commits);
+        return payload;
     }
 
-    static String getBuildColor(AbstractBuild r) {
+    static String getBuildStatus(AbstractBuild r) {
         Result result = r.getResult();
         if (result == Result.SUCCESS) {
-            return "good";
+            return "Success";
         } else if (result == Result.FAILURE) {
-            return "danger";
-        } else {
-            return "warning";
+            return "Failure";
+        } else if (result == Result.ABORTED) {
+            return "Aborted";
+        } else if (result == Result.NOT_BUILT) {
+            return "NoBuild";
+        } else if (result == Result.UNSTABLE) {
+            return "Unstable";
         }
+        return "Unknown";
     }
 
-    String getBuildStatusMessage(AbstractBuild r, boolean includeTestSummary) {
-        MessageBuilder message = new MessageBuilder(notifier, r);
-        message.appendStatusMessage();
-        message.appendDuration();
-        message.appendOpenLink();
+    JSONObject getBuildStatusPayload(AbstractBuild build, boolean includeTestSummary, String event) {
+        JSONObject payload = new JSONObject();
+        payload.put("status", getBuildStatus(build));
+        payload.put("duration", build.getDurationString());
+        payload.put("project", build.getProject().getFullDisplayName());
+        payload.put("display", build.getDisplayName());
+        payload.put("link", build.getUrl());
+        payload.put("event", event);
+
         if (!includeTestSummary) {
-            return message.toString();
-        }
-        return message.appendTestSummary().toString();
-    }
-
-    public static class MessageBuilder {
-
-        private StringBuffer message;
-        private SlackNotifier notifier;
-        private AbstractBuild build;
-
-        public MessageBuilder(SlackNotifier notifier, AbstractBuild build) {
-            this.notifier = notifier;
-            this.message = new StringBuffer();
-            this.build = build;
-            startMessage();
+            return payload;
         }
 
-        public MessageBuilder appendStatusMessage() {
-            message.append(this.escape(getStatusMessage(build)));
-            return this;
-        }
+        AbstractTestResultAction<?> action = build.getAction(AbstractTestResultAction.class);
+        if (action != null) {
+            int total = action.getTotalCount();
+            int failed = action.getFailCount();
+            int skipped = action.getSkipCount();
+            payload.put("Passed", total - failed - skipped);
+            payload.put("Failed", failed);
+            payload.put("Skipped", skipped);
 
-        static String getStatusMessage(AbstractBuild r) {
-            if (r.isBuilding()) {
-                return "Starting...";
-            }
-            Result result = r.getResult();
-            Run previousBuild = r.getProject().getLastBuild().getPreviousBuild();
-            Result previousResult = (previousBuild != null) ? previousBuild.getResult() : Result.SUCCESS;
-            if (result == Result.SUCCESS && previousResult == Result.FAILURE) {
-                return "Back to normal";
-            }
-            if (result == Result.FAILURE && previousResult == Result.FAILURE) {
-                return "Still Failing";
-            }
-            if (result == Result.SUCCESS) {
-                return "Success";
-            }
-            if (result == Result.FAILURE) {
-                return "Failure";
-            }
-            if (result == Result.ABORTED) {
-                return "Aborted";
-            }
-            if (result == Result.NOT_BUILT) {
-                return "Not built";
-            }
-            if (result == Result.UNSTABLE) {
-                return "Unstable";
-            }
-            return "Unknown";
         }
-
-        public MessageBuilder append(String string) {
-            message.append(this.escape(string));
-            return this;
-        }
-
-        public MessageBuilder append(Object string) {
-            message.append(this.escape(string.toString()));
-            return this;
-        }
-
-        private MessageBuilder startMessage() {
-            message.append(this.escape(build.getProject().getFullDisplayName()));
-            message.append(" - ");
-            message.append(this.escape(build.getDisplayName()));
-            message.append(" ");
-            return this;
-        }
-
-        public MessageBuilder appendOpenLink() {
-            String url = notifier.getBuildServerUrl() + build.getUrl();
-            message.append(" (<").append(url).append("|Open>)");
-            return this;
-        }
-
-        public MessageBuilder appendDuration() {
-            message.append(" after ");
-            message.append(build.getDurationString());
-            return this;
-        }
-
-        public MessageBuilder appendTestSummary() {
-            AbstractTestResultAction<?> action = this.build
-                    .getAction(AbstractTestResultAction.class);
-            if (action != null) {
-                int total = action.getTotalCount();
-                int failed = action.getFailCount();
-                int skipped = action.getSkipCount();
-                message.append("\nTest Status:\n");
-                message.append("\tPassed: " + (total - failed - skipped));
-                message.append(", Failed: " + failed);
-                message.append(", Skipped: " + skipped);
-            } else {
-                message.append("\nNo Tests found.");
-            }
-            return this;
-        }
-
-        public String escape(String string) {
-            string = string.replace("&", "&amp;");
-            string = string.replace("<", "&lt;");
-            string = string.replace(">", "&gt;");
-
-            return string;
-        }
-
-        public String toString() {
-            return message.toString();
-        }
+        return payload;
     }
 }

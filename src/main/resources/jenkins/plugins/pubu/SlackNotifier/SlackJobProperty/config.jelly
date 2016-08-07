@@ -39,21 +39,9 @@
             <f:entry title="Show Commit List with Titles and Authors">
                 <f:checkbox name="pubuShowCommitList" value="true" checked="${instance.getShowCommitList()}"/>
             </f:entry>
-
-            <f:entry title="Team Domain" help="${rootURL}/plugin/pubu/help-projectConfig-pubuTeamDomain.html">
-                <f:textbox name="pubuTeamDomain" value="${instance.getTeamDomain()}" />
-            </f:entry>
-
-            <f:entry title="Integration Token" help="${rootURL}/plugin/pubu/help-projectConfig-pubuToken.html">
-                <f:textbox name="pubuToken" value="${instance.getToken()}" />
-            </f:entry>
-
-            <f:entry title="Project Channel" help="${rootURL}/plugin/pubu/help-projectConfig-pubuRoom.html">
-                <f:textbox name="pubuProjectRoom" value="${instance.getRoom()}"/>
-            </f:entry>
             <f:validateButton
                 title="${%Test Connection}" progress="${%Testing...}"
-                method="testConnection" with="pubuTeamDomain,pubuToken,pubuProjectRoom" />
+                method="testConnection" with="pubuTeamDomain" />
         </f:advanced>
     </f:section>
 </j:jelly>

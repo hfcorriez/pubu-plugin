@@ -18,12 +18,12 @@
         <version>1.567</version>
     </parent>
 
-    <artifactId>pubu</artifactId>
+    <artifactId>leanchat</artifactId>
     <packaging>hpi</packaging>
     <version>1.8-SNAPSHOT</version>
-    <name>Pubu Notification Plugin</name>
-    <description>A Build status publisher that notifies channels on a Pubu team</description>
-    <url>http://wiki.jenkins-ci.org/display/JENKINS/Pubu+Plugin</url>
+    <name>LeanChat Notification Plugin</name>
+    <description>A Build status publisher that notifies channels on a LeanChat team</description>
+    <url>http://wiki.jenkins-ci.org/display/JENKINS/LeanChat+Plugin</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -38,9 +38,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:ssh://git@github.com/pubuim/jenkins-pubuim-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/pubuim/jenkins-pubuim-plugin.git</developerConnection>
-        <url>https://github.com/pubuim/jenkins-pubuim-plugin</url>
+        <connection>scm:git:ssh://git@github.com/pubuim/leanchat-jenkins-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/pubuim/leanchat-jenkins-plugin.git</developerConnection>
+        <url>https://github.com/pubuim/leanchat-jenkins-plugin</url>
         <tag>HEAD</tag>
     </scm>
 

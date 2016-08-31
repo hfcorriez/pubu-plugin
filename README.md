@@ -1,4 +1,4 @@
-# LeanChat plugin for Jenkins - [![Build Status][jenkins-status]][jenkins-builds]
+# LeanChat plugin for Jenkins
 
 Started with a fork of the HipChat plugin:
 
@@ -24,7 +24,7 @@ Run unit tests
 
 Create an HPI file to install in Jenkins (HPI file will be in `target/leanchat.hpi`).
 
-    mvn package
+    mvn clean package
 
 [jenkins-builds]: https://jenkins.ci.cloudbees.com/job/plugins/job/leanhcat-plugin/
 [jenkins-status]: https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/leanhcat-plugin

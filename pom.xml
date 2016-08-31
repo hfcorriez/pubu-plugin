@@ -20,7 +20,7 @@
 
     <artifactId>leanchat</artifactId>
     <packaging>hpi</packaging>
-    <version>1.8-SNAPSHOT</version>
+    <version>1.9-SNAPSHOT</version>
     <name>LeanChat Notification Plugin</name>
     <description>A Build status publisher that notifies channels on a LeanChat team</description>
     <url>http://wiki.jenkins-ci.org/display/JENKINS/LeanChat+Plugin</url>

@@ -118,26 +118,30 @@ public class ActiveNotifier implements FineGrainedNotifier {
             logger.info("No change set computed...");
             return null;
         }
+
         ChangeLogSet changeSet = build.getChangeSet();
         List<Entry> entries = new LinkedList<Entry>();
         Set<AffectedFile> files = new HashSet<AffectedFile>();
+
         for (Object o : changeSet.getItems()) {
             Entry entry = (Entry) o;
             logger.info("Entry " + o);
             entries.add(entry);
             files.addAll(entry.getAffectedFiles());
         }
+
+        JSONObject payload = new JSONObject();
+
         if (entries.isEmpty()) {
             logger.info("Empty change...");
-            return null;
-        }
-        JSONObject payload = new JSONObject();
-        Set<String> authors = new HashSet<String>();
-        for (Entry entry : entries) {
-            authors.add(entry.getAuthor().getDisplayName());
+        } else {
+            Set<String> authors = new HashSet<String>();
+            for (Entry entry : entries) {
+                authors.add(entry.getAuthor().getDisplayName());
+            }
+            payload.put("authors", StringUtils.join(authors, ", "));
         }
 
-        payload.put("authors", StringUtils.join(authors, ", "));
         payload.put("changes", files.size());
         payload.put("project", build.getProject().getFullDisplayName());
         payload.put("display", build.getDisplayName());
@@ -149,6 +153,10 @@ public class ActiveNotifier implements FineGrainedNotifier {
     JSONObject getCommitList(AbstractBuild build) {
         ChangeLogSet changeSet = build.getChangeSet();
         JSONObject payload = getChanges(build);
+
+        if (payload == null) {
+            payload = new JSONObject();
+        }
 
         List<Entry> entries = new LinkedList<Entry>();
         for (Object o : changeSet.getItems()) {

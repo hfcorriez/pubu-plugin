@@ -39,9 +39,6 @@
             <f:entry title="Show Commit List with Titles and Authors">
                 <f:checkbox name="pubuShowCommitList" value="true" checked="${instance.getShowCommitList()}"/>
             </f:entry>
-            <f:validateButton
-                title="${%Test Connection}" progress="${%Testing...}"
-                method="testConnection" with="pubuTeamDomain" />
         </f:advanced>
     </f:section>
 </j:jelly>

@@ -30,7 +30,6 @@ public class StandardSlackService implements SlackService {
         this.host = url;
         this.teamDomain = url;
         this.token = url;
-        this.roomIds = url.split("[,; ]+");
     }
 
     public boolean publish(String message) {

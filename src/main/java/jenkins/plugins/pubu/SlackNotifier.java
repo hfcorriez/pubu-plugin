@@ -2,29 +2,22 @@ package jenkins.plugins.pubu;
 
 import hudson.Extension;
 import hudson.Launcher;
-import hudson.model.BuildListener;
-import hudson.model.JobPropertyDescriptor;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Descriptor;
-import hudson.model.Job;
+import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.logging.Logger;
-import javax.servlet.ServletException;
-
 import net.sf.json.JSONObject;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SlackNotifier extends Notifier {
 
@@ -347,6 +340,7 @@ public class SlackNotifier extends Notifier {
                     boolean success = testSlackService.publish(message, "green");
                     return success ? FormValidation.ok("Success") : FormValidation.error("Failure");
                 } catch (Exception e) {
+                    logger.log(Level.WARNING, "Error posting to exception", e);
                     return FormValidation.error("Client error : " + e.getMessage());
                 }
             }
